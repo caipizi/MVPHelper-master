@@ -15,7 +15,11 @@ import java.util.Date;
  */
 public class ClassCreateHelper {
     static final int  PRESENTER = 1;
-    static final int VIEW = 2;
+    static final int MODEl = 2;
+    static final int BasePresenter = 3;
+    static final int BaseModel = 4;
+    static final int BaseView = 5;
+
 
     /**
      * 创建实现类
@@ -27,67 +31,84 @@ public class ClassCreateHelper {
      */
     public static void createClasses(String path, String className, String classFullName, int mode) throws IOException {
         String type = null;
-        if(mode == PRESENTER){
-            type = "Presenter";
-        }else if(mode == VIEW){
-            type = "Fragment";
+        String dir = "";
+        switch (mode){
+            case PRESENTER:
+                type = "PresenterImpl";
+                dir = path+"presenter/";
+                break;
+            case MODEl:
+                type = "ModelImpl";
+                dir = path+"model/";
+                break;
+            case BaseModel:
+                type = "BaseModel";
+                dir = path+"base/";
+                break;
+            case BaseView:
+                type = "BaseView";
+                dir = path+"base/";
+                break;
+            case BasePresenter:
+                type = "BasePresenter";
+                dir = path+"base/";
+                break;
         }
-        String dir = path;
-
-        String filePath = dir + className + type+".java";
-
+        String filePath =null;
+        if(mode==PRESENTER||mode==MODEl) filePath = dir + className + type+".java";
+        else filePath = dir + type+".java";
         File dirs = new File(dir);
-
         System.out.println("dirs = "+dir);
         File file = new File(filePath);
         if(!dirs.exists()){
             dirs.mkdir();
+        }else{
+            if(file.exists()){
+                return;
+            }
         }
         file.createNewFile();
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         String packageName = getPackageName(dir);
+        System.out.println("createClasses===>package="+packageName);
         writer.write("package "+ packageName+";");
         writer.newLine();
+        if(mode==PRESENTER||mode==MODEl)
+        if(getPackageName(path).endsWith("/contract"))
+            writer.write("import "+ getPackageName(path)+"."+classFullName+";");
+        else
+            writer.write("import "+ getPackageName(path+"contract")+"."+classFullName+";");
         writer.newLine();
-        if(mode == VIEW){
+       /* if(mode == MODEl){
             writer.write("import android.support.v4.app.Fragment;");
             writer.newLine();
             writer.newLine();
-        }
+        }*/
 
         Date date = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        writer.write("/**\n* Created by MVPHelper on "+sdf.format(date)+"\n*/");
-
+        writer.write("/**\n* Created by cxianchunk on "+sdf.format(date)+"\n*/");
         writer.newLine();
         writer.newLine();
-        if(mode == PRESENTER){
-            writer.write("public class " + className + "Presenter implements "+classFullName+".Presenter"+" {");
-            writer.newLine();
-            writer.newLine();
-            writer.write("\tprivate final "+classFullName+".View m"+className+"View;");
-            writer.newLine();
-            writer.newLine();
-            writer.write("\tpublic "+className+"Presenter("+classFullName+".View "+getFirstLowerVariables(className)+"View) {m"+className+"View = "+getFirstLowerVariables(className)+"View;}");
-            writer.newLine();
-            writer.write("\t@Override\n");
-            writer.write("\tpublic void start() {\n");
-            writer.write("\t\t\n");
-            writer.write("\t}");
-        }else if(mode == VIEW){
-            writer.write("public class "+className+"Fragment extends Fragment implements "+classFullName+".View {");
-            writer.newLine();
-            writer.newLine();
-            writer.write("\tprivate "+classFullName+".Presenter mPresenter;");
-            writer.newLine();
-            writer.newLine();
-            writer.write("\t@Override\n");
-            writer.write("\tpublic void setPresenter("+classFullName+".Presenter presenter) {\n");
-            writer.write("\t\tmPresenter = presenter;\n");
-            writer.write("\t}");
+        switch (mode){
+            case PRESENTER:
+                writer.write("public class " + className + "PresenterImpl implements "+classFullName+".Presenter"+" {");
+                break;
+            case MODEl:
+                writer.write("public class "+className+"ModelImpl implements "+classFullName+".Model {");
+                break;
+            case BaseModel:
+                writer.write("public interface BaseModel {");
+                break;
+            case BaseView:
+                writer.write("public interface BaseView {");
+                break;
+            case BasePresenter:
+                writer.write("public abstract class BasePresenter<E,T> {");
+                break;
         }
-
+        writer.newLine();
         writer.newLine();
         writer.newLine();
         writer.write("}");

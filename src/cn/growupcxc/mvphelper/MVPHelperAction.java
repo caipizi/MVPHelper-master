@@ -61,17 +61,22 @@ public class MVPHelperAction extends AnAction {
         //create Presenter
         ClassCreateHelper.createClasses(_path, className, classFullName, ClassCreateHelper.PRESENTER);
         //create View
-        ClassCreateHelper.createClasses(_path, className, classFullName, ClassCreateHelper.VIEW);
+        ClassCreateHelper.createClasses(_path, className, classFullName, ClassCreateHelper.MODEl);
+        //create Base
+        ClassCreateHelper.createClasses(_path, className, classFullName, ClassCreateHelper.BaseModel);
+        ClassCreateHelper.createClasses(_path, className, classFullName, ClassCreateHelper.BaseView);
+        ClassCreateHelper.createClasses(_path, className, classFullName, ClassCreateHelper.BasePresenter);
     }
 
     private void createFiles() {
+        String _AbsolutePath=null;
         if (null == _classModel.get_className()) {
             return;
         }
-        _path= ClassCreateHelper.getCurrentPath(_event,_classModel.get_classFullName());
-        System.out.println("current _path"+ _path);
+        _path = ClassCreateHelper.getCurrentPath(_event,_classModel.get_classFullName());
+        _AbsolutePath = _path;
+        System.out.println("current _path="+ _path);
         if(_classModel.get_classFullName().contains("Contract")) {
-
             System.out.println("_path replace contract "+ _path);
             _path = _path.replace("contract/", "");
         } else {
@@ -79,21 +84,21 @@ public class MVPHelperAction extends AnAction {
             canCreate = false;
         }
         if(canCreate) {
-            setFileDocument();
+            setFileDocument(_AbsolutePath);
         }
     }
 
-    private void setFileDocument() {
-        String packageName = ClassCreateHelper.getPackageName(_path);
-
+    private void setFileDocument(String _AbsolutePath) {
+        String packageName = ClassCreateHelper.getPackageName(_AbsolutePath);
         String packageInfo = "package "+ packageName+";\n";
-
-        String importInfo = "import "+mBasePackageName+".BaseView;\n";
-        importInfo += "import "+mBasePackageName+".BasePresenter;\n";
-
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("import " + mBasePackageName + ".base.BaseModel;\n")
+        .append("import " + mBasePackageName + ".base.BasePresenter;\n")
+        .append("import "+mBasePackageName+".base.BaseView;\n");
         int packageIndex = _content.indexOf(packageInfo)+packageInfo.length();
         int lastIndex = _content.lastIndexOf("}");
-        _content = packageInfo+importInfo+_content.substring(packageIndex, lastIndex);
+        _content = packageInfo+buffer.toString()+_content.substring(packageIndex, lastIndex);
+
         MessagesCenter.showDebugMessage(_content, "debug");
         final String content = setContractContent();
         //wirte in runWriteAction
@@ -107,8 +112,9 @@ public class MVPHelperAction extends AnAction {
     }
 
     private String setContractContent() {
-        String content = _content + "\tinterface View extends BaseView<Presenter> {\n\t}\n\n"
-                + "\tinterface Presenter extends BasePresenter {\n\t}\n"
+        String content = _content +"\tpublic interface Model extends BaseModel {\n\t}\n\n"
+                + "\tpublic interface View extends BaseView {\n\t}\n\n"
+                + "\tpublic abstract class Presenter extends BasePresenter<Model,View> {\n\t}\n"
                 + "\n}";
 
         return content;
