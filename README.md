@@ -21,8 +21,4 @@ public class MainContract {
 
 }
 ```
-```java  
-  
 ![image](https://github.com/caipizi/MVPHelper-master/blob/master/img/logo.jpg)
-  
-```
