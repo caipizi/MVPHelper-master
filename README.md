@@ -6,6 +6,7 @@ A plugin can help you to create google samples MVP classes
 
 对基类BaseView、BaseModel、BasePresenter进行封装，如果需要生成别的模板内容可以修改本项目代码重新生成符合您要求的插件。
 PS:
+
 public class MainContract {
 
 
